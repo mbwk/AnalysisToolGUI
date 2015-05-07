@@ -1,0 +1,7 @@
+build/
+dist/
+nbproject/private
+
+# log files #
+*.atx
+*.log
