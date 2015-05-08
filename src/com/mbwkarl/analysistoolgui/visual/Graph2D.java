@@ -29,7 +29,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 /**
- *
+ * A graphing tool that is capable of plotting multiple Data Streams at once.
  * @author Karl Birch
  */
 public class Graph2D extends javax.swing.JPanel implements ComponentListener, ListDataListener {
@@ -38,7 +38,11 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
         Color.BLUE,
         Color.RED,
         Color.MAGENTA,
-        Color.GREEN
+        Color.GREEN,
+        new Color(34, 4, 217),
+        new Color(50, 10, 6),
+        new Color(16, 44, 60),
+        new Color(155,0,38)
     };
     
     private final int GRAPH_MARGIN = 10;
@@ -50,10 +54,6 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
     private final RangeSlider rangeSlider;
     
     private boolean timeCompatibility = true;
-    
-    // private BigDecimal lowestTime;
-    // private BigDecimal highestTime;
-    // private BigDecimal diffTime;
     
     public Graph2D(DataStreamListModel dslm, RangeSlider rslider) {
         rangeSlider = rslider;
@@ -74,18 +74,6 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
         }
         
         timeCompatibility = selectedDataStreams.areTimeCompatible();
-        
-        
-        //BigDecimal lowerMostKey, upperMostKey;
-
-//        lowerMostKey = selectedDataStreams.getLowestKey();
-//        upperMostKey = selectedDataStreams.getHighestKey();
-//
-//        BigDecimal diffKey = upperMostKey.subtract(lowerMostKey);
-//        BigDecimal interval = diffKey.divide(new BigDecimal(rangeSlider.getMaximum()), 2, RoundingMode.HALF_UP);
-//        lowestTime = lowerMostKey.add(interval.multiply(new BigDecimal(rangeSlider.getValue())));
-//        highestTime = lowerMostKey.add(interval.multiply(new BigDecimal(rangeSlider.getUpperValue())));
-//        diffTime = highestTime.subtract(lowestTime);
         
         clearCanvas(g);
         drawAxes(g);
@@ -124,6 +112,10 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
         drawYAxis(g);
     }
     
+    /**
+     * Draws the X Axis and labels it with a minimum and maximum time
+     * @param g 
+     */
     private void drawXAxis(Graphics g) {
         int offset = 20;
         
@@ -164,6 +156,10 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
         }
     }
     
+    /**
+     * Draws the Y Axis and labels it with value points from the selected stream
+     * @param g 
+     */
     private void drawYAxis(Graphics g) {
         int offset = 30;
         int yPoints = getNumYPoints();
@@ -252,10 +248,6 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
     }
     
     private void drawPlot(Graphics g) {
-//        if (highestTime.compareTo(lowestTime) == 0) {
-//            return;
-//        }
-        
         Graphics2D g2d = (Graphics2D) g.create();
         
         int colorcycle = 0;
@@ -281,7 +273,7 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
             int[] xpoints = getXPointsForPlotting();
             boolean lastDrawable = false;
             for (int i = 0; i < numPoints; ++i) {
-                if (points[i] >= getAxisBottom()) {
+                if (points[i] > getAxisBottom()) {
                     lastDrawable = false;
                 } else {
                     if (lastDrawable) {
@@ -334,7 +326,7 @@ public class Graph2D extends javax.swing.JPanel implements ComponentListener, Li
             ratio = diffDataMin.divide(diffMaxMin, 2, RoundingMode.HALF_UP);
         }
         
-        BigDecimal yPos = ratio.multiply(new BigDecimal(getAxisHeight()));
+        BigDecimal yPos = ratio.multiply(BigDecimal.valueOf(getAxisHeight()));
         int yCoord = getAxisBottom() - yPos.intValue();
         return yCoord;
     }

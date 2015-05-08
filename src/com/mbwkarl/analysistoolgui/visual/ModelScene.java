@@ -18,7 +18,6 @@ package com.mbwkarl.analysistoolgui.visual;
 import com.mbwkarl.analysistool.model.DataStream;
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Box;
-import com.sun.j3d.utils.geometry.ColorCube;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import java.awt.GridLayout;
@@ -295,20 +294,83 @@ class ModelScene extends JPanel {
         tg.addChild(sphere);
         return tg;
     }
+
+    private Box mkPathSegment(float x, float y, float z, float lastX, float lastY, float lastZ) {
+        int xDiff = 0, yDiff = 1, zDiff = 2;
+        float diffs[] = new float[3];
+        diffs[xDiff] = x - lastX;
+        diffs[yDiff] = y - lastY;
+        diffs[zDiff] = z - lastZ;
+        
+        float distance = 0;
+        for (int i = 0, limit = diffs.length; i < limit; ++i) {
+            distance += diffs[i] * diffs[i];
+        }
+        distance = (float) Math.sqrt(distance);
+        
+        Appearance appear = new Appearance();
+        ColoringAttributes ca = new ColoringAttributes(.1f, 1.4f, .1f, ColoringAttributes.NICEST);
+        appear.setColoringAttributes(ca);
+        Box box = new Box(distance, SPHERE_SIZE, 0.01f, appear);
+        return box;
+    }
+    
+    private Vector3f mkTranslationVector(float x, float y, float z, float lastX, float lastY, float lastZ) {
+        float diffX = x - lastX, diffY = y - lastY, diffZ = z - lastZ;
+        float midX = x - diffX/2, midY = y - diffY/2, midZ = z - diffZ/2;
+        Vector3f vec = new Vector3f(midX, midY, midZ);
+        return vec;
+    }
+    
+    private double getRot(float x, float y, float lastX, float lastY) {
+        float diffX = x - lastX;
+        float diffY = y - lastY;
+        
+        double angleInDegrees = Math.atan(diffY / diffX) * 180 / Math.PI;
+        
+        return angleInDegrees;
+    }
     
     private TransformGroup drawToNextPoint(float x, float y, float z, float lastX, float lastY, float lastZ) {
+        ColoringAttributes ca = new ColoringAttributes(.1f, 1.4f, .1f, ColoringAttributes.NICEST);
+        
+        TransformGroup transformGroup = new TransformGroup();
+        
+        // old
         Appearance ap = new Appearance();
-        ap.setColoringAttributes(new ColoringAttributes(.1f, 1.4f, .1f, ColoringAttributes.NICEST));
+        ap.setColoringAttributes(ca);
         Sphere sphere = new Sphere(SPHERE_SIZE);
         
-        TransformGroup tg = new TransformGroup();
+        TransformGroup sphereTG = new TransformGroup();
         Transform3D transform = new Transform3D();
 
         Vector3f vector = new Vector3f(x, y, z);
         transform.setTranslation(vector);
-        tg.setTransform(transform);
-        tg.addChild(sphere);
-        return tg;
+        sphereTG.setTransform(transform);
+        sphereTG.addChild(sphere);
+        
+        // new
+//        Box pathSegment = mkPathSegment(x, y, z, lastX, lastY, lastZ);
+//        
+//        TransformGroup pathTG = new TransformGroup();
+//        Transform3D transformation = new Transform3D();
+//        transformation.setTranslation(mkTranslationVector(x, y, z, lastX, lastY, lastZ));
+//        pathTG.setTransform(transformation);
+//        
+//        Transform3D rotationPos = new Transform3D();
+//        Transform3D rotationAlt = new Transform3D();
+//        rotationPos.rotZ(getRot(x, y, lastX, lastY) - 90);
+//        rotationAlt.rotY(getRot(x, z, lastX, lastZ));
+//        rotationPos.mul(rotationAlt);
+//        TransformGroup rotationGroup = new TransformGroup(rotationPos);
+//        rotationGroup.addChild(pathSegment);
+//        
+//        pathTG.addChild(rotationGroup);
+        
+        transformGroup.addChild(sphereTG);
+//        transformGroup.addChild(pathTG);
+        
+        return transformGroup;
     }
     
     // <editor-fold desc="Extern" defaultstate="collapsed">
